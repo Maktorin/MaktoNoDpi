@@ -38,10 +38,11 @@ final class ProxyController: ObservableObject {
         self.bundledTpwsPath = bundled
 
         // Snapshot Sendable values for the wiring closures (no self capture).
+        // Capture the SettingsStore itself (Sendable, reads live from UserDefaults)
+        // so custom domains edited in Settings are picked up on the next connect.
         let supportPath = supportDir.path
         let bundledPath = bundled
-        let includeDomains = settings.customIncludeDomains
-        let excludeDomains = settings.customExcludeDomains
+        let settingsForFiles = settings
         let hostsMarker = HostsData.marker
         let hostsFallback = HostsData.fallback()
         let pfRules = PrivilegedRunner.pfQuicBlockRules
@@ -53,8 +54,8 @@ final class ProxyController: ObservableObject {
             let mgr = BinaryManager(bundledTpws: bundledPath, supportDir: supportPath)
             try mgr.installBundledBinary()
             let listsDir = try mgr.ensureHostLists(
-                customInclude: includeDomains,
-                customExclude: excludeDomains
+                customInclude: settingsForFiles.customIncludeDomains,
+                customExclude: settingsForFiles.customExcludeDomains
             )
             try mgr.ensurePatternFiles()
             return listsDir

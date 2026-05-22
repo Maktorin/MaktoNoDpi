@@ -135,6 +135,11 @@ public actor ProxyEngine {
             return phase
         }
 
+        // Clean DNS (1.1.1.1 / 8.8.8.8) to avoid ISP DNS poisoning for Discord
+        // (electron-main.js:2159). restoreDns() in stop() reverts this.
+        await systemConfig.setCleanDns(services: services)
+        log(.info, "DNS установлен на 1.1.1.1 / 8.8.8.8 (защита от подмены)")
+
         let ordered = orderedStrategies()
         let total = ordered.count
         log(.info, "Начинаю перебор \(total) стратегий...")
