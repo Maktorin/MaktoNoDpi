@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>MaktoNoDpi · Main Window mockup</title>
+<style>
+  :root{
+    --yt:#FF0033; --dc:#5865F2; --tg:#229ED9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",sans-serif;
+    background:linear-gradient(160deg,#3a6ea5 0%,#5b4b8a 55%,#883f6b 100%);
+    background-attachment:fixed;
+    min-height:100vh;
+    padding:56px 40px 80px;
+    color:#1d1d1f;
+    -webkit-font-smoothing:antialiased;
+  }
+  h2.section{
+    color:rgba(255,255,255,.92); font-size:13px; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; margin:40px 0 18px; text-shadow:0 1px 2px rgba(0,0,0,.25);
+  }
+  h2.section:first-of-type{margin-top:0;}
+  .row{display:flex; gap:36px; flex-wrap:wrap; align-items:flex-start;}
+  .stage{display:flex; flex-direction:column; gap:8px;}
+  .stage .cap{color:rgba(255,255,255,.78); font-size:12px; font-style:italic; padding-left:4px;}
+
+  /* ---------- window shell ---------- */
+  .win{
+    width:420px; border-radius:12px; overflow:hidden;
+    background:#ECECEC;
+    box-shadow:0 24px 60px rgba(0,0,0,.34), 0 0 0 .5px rgba(0,0,0,.18);
+  }
+  .win.dark{ background:#262629; color:#f2f2f7; }
+  .titlebar{
+    height:44px; display:flex; align-items:center; padding:0 16px; position:relative;
+    background:rgba(255,255,255,.55); backdrop-filter:blur(20px);
+    border-bottom:.5px solid rgba(0,0,0,.10);
+  }
+  .dark .titlebar{ background:rgba(58,58,62,.6); border-bottom:.5px solid rgba(255,255,255,.08); }
+  .lights{display:flex; gap:8px;}
+  .lights i{width:12px;height:12px;border-radius:50%;display:block;}
+  .lights .c{background:#ff5f57;} .lights .m{background:#febc2e;} .lights .x{background:#28c840;}
+  .title{
+    position:absolute; left:0; right:0; text-align:center; font-size:13px; font-weight:590;
+    color:#3a3a3c; pointer-events:none; letter-spacing:.01em;
+  }
+  .dark .title{color:#e6e6ea;}
+  .body{padding:18px 16px 16px;}
+
+  /* ---------- hero status ---------- */
+  .hero{
+    border-radius:12px; padding:16px 16px 15px; display:flex; align-items:center; gap:13px;
+    background:rgba(48,209,88,.13); border:.5px solid rgba(48,209,88,.28);
+  }
+  .hero .glyph{
+    width:38px;height:38px;border-radius:50%; flex:none; display:grid; place-items:center;
+    background:rgba(48,209,88,.18);
+  }
+  .hero .glyph svg{width:21px;height:21px;}
+  .hero .ht{font-size:15px; font-weight:640; line-height:1.15;}
+  .hero .hs{font-size:12px; color:#6b6b70; margin-top:2px;}
+  .dark .hero{background:rgba(48,209,88,.16); border-color:rgba(48,209,88,.32);}
+  .dark .hero .hs{color:#a0a0a8;}
+
+  /* searching variant */
+  .hero.searching{background:rgba(255,159,10,.13); border-color:rgba(255,159,10,.30);}
+  .hero.searching .glyph{background:rgba(255,159,10,.20);}
+  /* off variant */
+  .hero.off{background:rgba(120,120,128,.12); border-color:rgba(120,120,128,.22);}
+  .hero.off .glyph{background:rgba(120,120,128,.16);}
+
+  .spinner{
+    width:19px;height:19px;border-radius:50%;
+    border:2.4px solid rgba(255,159,10,.25); border-top-color:#ff9f0a;
+    animation:spin .9s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ---------- services section ---------- */
+  .seclabel{
+    display:flex; align-items:center; justify-content:space-between;
+    margin:18px 4px 8px;
+  }
+  .seclabel span{font-size:11px; font-weight:600; letter-spacing:.05em; color:#86868b; text-transform:uppercase;}
+  .refresh{
+    width:24px;height:24px;border-radius:6px; border:none; cursor:pointer;
+    background:rgba(120,120,128,.14); display:grid; place-items:center; color:#86868b;
+  }
+  .refresh svg{width:13px;height:13px;}
+
+  .list{
+    border-radius:11px; overflow:hidden; background:#fff;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+  }
+  .dark .list{background:#1c1c1e; box-shadow:0 0 0 .5px rgba(255,255,255,.06);}
+  .svc{display:flex; align-items:center; gap:12px; padding:11px 14px; position:relative;}
+  .svc + .svc::before{content:""; position:absolute; top:0; left:54px; right:0; height:.5px; background:rgba(0,0,0,.08);}
+  .dark .svc + .svc::before{background:rgba(255,255,255,.08);}
+  .ico{width:30px;height:30px;border-radius:8px; flex:none; display:grid; place-items:center;}
+  .ico svg{width:18px;height:18px;}
+  .ico.yt{background:rgba(255,0,51,.12);}   .ico.yt svg{fill:var(--yt);}
+  .ico.dc{background:rgba(88,101,242,.13);}  .ico.dc svg{fill:var(--dc);}
+  .ico.tg{background:rgba(34,158,217,.13);}  .ico.tg svg{fill:var(--tg);}
+  .svc .meta{flex:1; min-width:0;}
+  .svc .nm{font-size:13.5px; font-weight:560; line-height:1.2;}
+  .svc .sub{font-size:11px; color:#9a9aa0; margin-top:1.5px;}
+  .svc .lat{font-size:12px; color:#86868b; font-variant-numeric:tabular-nums; margin-right:9px;}
+  .svc .lat.dim{color:#c2c2c7;}
+  .dot{width:9px;height:9px;border-radius:50%; flex:none; box-shadow:0 0 0 .5px rgba(0,0,0,.06);}
+  .dot.g{background:#30d158; box-shadow:0 0 5px rgba(48,209,88,.55);}
+  .dot.y{background:#ff9f0a; box-shadow:0 0 5px rgba(255,159,10,.5);}
+  .dot.r{background:#ff453a; box-shadow:0 0 5px rgba(255,69,58,.5);}
+  .dot.o{background:#c4c4c9;}
+
+  /* ---------- primary button ---------- */
+  .btn{
+    width:100%; margin-top:16px; height:34px; border-radius:8px; border:none; cursor:pointer;
+    font-size:14px; font-weight:550; font-family:inherit;
+  }
+  .btn.primary{background:#0a84ff; color:#fff; box-shadow:0 1px 2px rgba(10,132,255,.4);}
+  .btn.secondary{background:rgba(120,120,128,.16); color:#1d1d1f;}
+  .dark .btn.secondary{background:rgba(120,120,128,.28); color:#f2f2f7;}
+
+  /* ---------- details disclosure ---------- */
+  .details{margin-top:14px; border-top:.5px solid rgba(0,0,0,.09); padding-top:10px;}
+  .dark .details{border-top-color:rgba(255,255,255,.09);}
+  .disc{display:flex; align-items:center; gap:6px; font-size:12px; color:#86868b; cursor:pointer; user-select:none;}
+  .disc svg{width:9px;height:9px; transition:transform .15s; fill:#86868b;}
+  .disc.open svg{transform:rotate(90deg);}
+  .techgrid{display:grid; grid-template-columns:auto 1fr; gap:7px 16px; margin:12px 4px 4px; font-size:12px;}
+  .techgrid dt{color:#9a9aa0;} .techgrid dd{text-align:right; font-variant-numeric:tabular-nums; color:#48484a;}
+  .dark .techgrid dd{color:#c7c7cc;}
+  .badge{display:inline-block; padding:1px 7px; border-radius:5px; font-size:10.5px; font-weight:600;}
+  .badge.ok{background:rgba(48,209,88,.16); color:#248a3d;}
+  .badge.on{background:rgba(10,132,255,.14); color:#0a84ff;}
+  .log{
+    margin:12px 4px 2px; background:rgba(120,120,128,.08); border-radius:7px; padding:9px 10px;
+    font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:10.5px; line-height:1.55; color:#6e6e73;
+  }
+  .dark .log{background:rgba(255,255,255,.05); color:#a0a0a8;}
+  .log .t{color:#aeaeb2;}
+  .log .ok{color:#30a14e;}
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     Reusable inline SVG symbols (real simple-icons brand paths)
+     ========================================================= -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="yt" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></symbol>
+  <symbol id="dc" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></symbol>
+  <symbol id="tg" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></symbol>
+  <symbol id="shield" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.2L7 11.4l1.4-1.4 2.4 2.4 4.8-4.8L17 9z"/></symbol>
+  <symbol id="power" viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.8 2.2-1.4 1.4A7 7 0 1 1 7.6 6.6L6.2 5.2a9 9 0 1 0 11.6 0z"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="M8 4l8 8-8 8z"/></symbol>
+  <symbol id="reload" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/></symbol>
+</svg>
+
+<!-- helper macros expanded inline below -->
+
+<h2 class="section">Основной вид — «Соединение активно»</h2>
+<div class="row">
+
+  <!-- ============ A · Connected (light) ============ -->
+  <div class="stage">
+    <div class="cap">Светлая тема · подключено</div>
+    <div class="win">
+      <div class="titlebar"><div class="lights"><i class="c"></i><i class="m"></i><i class="x"></i></div><div class="title">MaktoNoDpi</div></div>
+      <div class="body">
+        <div class="hero">
+          <div class="glyph"><svg fill="#30a14e"><use href="#shield"/></svg></div>
+          <div><div class="ht">Соединение активно</div><div class="hs">Стратегия split2+disorder · 14 мин</div></div>
+        </div>
+
+        <div class="seclabel"><span>Сервисы</span>
+          <button class="refresh" title="Обновить"><svg fill="currentColor"><use href="#reload"/></svg></button></div>
+
+        <div class="list">
+          <div class="svc"><div class="ico yt"><svg><use href="#yt"/></svg></div>
+            <div class="meta"><div class="nm">YouTube</div><div class="sub">видео и превью</div></div>
+            <div class="lat">42 мс</div><div class="dot g"></div></div>
+          <div class="svc"><div class="ico dc"><svg><use href="#dc"/></svg></div>
+            <div class="meta"><div class="nm">Discord</div><div class="sub">чат, медиа, голос</div></div>
+            <div class="lat">38 мс</div><div class="dot g"></div></div>
+          <div class="svc"><div class="ico tg"><svg><use href="#tg"/></svg></div>
+            <div class="meta"><div class="nm">Telegram</div><div class="sub">web и звонки</div></div>
+            <div class="lat">55 мс</div><div class="dot g"></div></div>
+        </div>
+
+        <button class="btn secondary">Отключить</button>
+
+        <div class="details">
+          <div class="disc"><svg><use href="#chev"/></svg>Подробности</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ B · Connected (dark) ============ -->
+  <div class="stage">
+    <div class="cap">Тёмная тема · подключено</div>
+    <div class="win dark">
+      <div class="titlebar"><div class="lights"><i class="c"></i><i class="m"></i><i class="x"></i></div><div class="title">MaktoNoDpi</div></div>
+      <div class="body">
+        <div class="hero">
+          <div class="glyph"><svg fill="#30d158"><use href="#shield"/></svg></div>
+          <div><div class="ht">Соединение активно</div><div class="hs">Стратегия split2+disorder · 14 мин</div></div>
+        </div>
+        <div class="seclabel"><span>Сервисы</span>
+          <button class="refresh" title="Обновить"><svg fill="currentColor"><use href="#reload"/></svg></button></div>
+        <div class="list">
+          <div class="svc"><div class="ico yt"><svg><use href="#yt"/></svg></div>
+            <div class="meta"><div class="nm">YouTube</div><div class="sub">видео и превью</div></div>
+            <div class="lat">42 мс</div><div class="dot g"></div></div>
+          <div class="svc"><div class="ico dc"><svg><use href="#dc"/></svg></div>
+            <div class="meta"><div class="nm">Discord</div><div class="sub">чат, медиа, голос</div></div>
+            <div class="lat">38 мс</div><div class="dot g"></div></div>
+          <div class="svc"><div class="ico tg"><svg><use href="#tg"/></svg></div>
+            <div class="meta"><div class="nm">Telegram</div><div class="sub">web и звонки</div></div>
+            <div class="lat">61 мс</div><div class="dot y"></div></div>
+        </div>
+        <button class="btn secondary">Отключить</button>
+        <div class="details"><div class="disc"><svg><use href="#chev"/></svg>Подробности</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<h2 class="section">Состояния</h2>
+<div class="row">
+
+  <!-- ============ C · Disconnected ============ -->
+  <div class="stage">
+    <div class="cap">Отключено</div>
+    <div class="win">
+      <div class="titlebar"><div class="lights"><i class="c"></i><i class="m"></i><i class="x"></i></div><div class="title">MaktoNoDpi</div></div>
+      <div class="body">
+        <div class="hero off">
+          <div class="glyph"><svg fill="#8e8e93"><use href="#power"/></svg></div>
+          <div><div class="ht">Отключено</div><div class="hs">Нажмите «Подключить» для обхода</div></div>
+        </div>
+        <div class="seclabel"><span>Сервисы</span>
+          <button class="refresh" title="Обновить"><svg fill="currentColor"><use href="#reload"/></svg></button></div>
+        <div class="list">
+          <div class="svc"><div class="ico yt"><svg><use href="#yt"/></svg></div>
+            <div class="meta"><div class="nm">YouTube</div><div class="sub">видео и превью</div></div>
+            <div class="lat dim">—</div><div class="dot o"></div></div>
+          <div class="svc"><div class="ico dc"><svg><use href="#dc"/></svg></div>
+            <div class="meta"><div class="nm">Discord</div><div class="sub">чат, медиа, голос</div></div>
+            <div class="lat dim">—</div><div class="dot o"></div></div>
+          <div class="svc"><div class="ico tg"><svg><use href="#tg"/></svg></div>
+            <div class="meta"><div class="nm">Telegram</div><div class="sub">web и звонки</div></div>
+            <div class="lat dim">—</div><div class="dot o"></div></div>
+        </div>
+        <button class="btn primary">Подключить</button>
+        <div class="details"><div class="disc"><svg><use href="#chev"/></svg>Подробности</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ D · Searching ============ -->
+  <div class="stage">
+    <div class="cap">Поиск стратегии</div>
+    <div class="win">
+      <div class="titlebar"><div class="lights"><i class="c"></i><i class="m"></i><i class="x"></i></div><div class="title">MaktoNoDpi</div></div>
+      <div class="body">
+        <div class="hero searching">
+          <div class="glyph"><div class="spinner"></div></div>
+          <div><div class="ht">Подбор стратегии…</div><div class="hs">Проверка 12 из 52 · split-host+disorder</div></div>
+        </div>
+        <div class="seclabel"><span>Сервисы</span>
+          <button class="refresh" title="Обновить"><svg fill="currentColor"><use href="#reload"/></svg></button></div>
+        <div class="list">
+          <div class="svc"><div class="ico yt"><svg><use href="#yt"/></svg></div>
+            <div class="meta"><div class="nm">YouTube</div><div class="sub">видео и превью</div></div>
+            <div class="lat dim">…</div><div class="dot y"></div></div>
+          <div class="svc"><div class="ico dc"><svg><use href="#dc"/></svg></div>
+            <div class="meta"><div class="nm">Discord</div><div class="sub">чат, медиа, голос</div></div>
+            <div class="lat dim">…</div><div class="dot y"></div></div>
+          <div class="svc"><div class="ico tg"><svg><use href="#tg"/></svg></div>
+            <div class="meta"><div class="nm">Telegram</div><div class="sub">web и звонки</div></div>
+            <div class="lat dim">…</div><div class="dot y"></div></div>
+        </div>
+        <button class="btn secondary">Отмена</button>
+        <div class="details"><div class="disc"><svg><use href="#chev"/></svg>Подробности</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ E · Details expanded ============ -->
+  <div class="stage">
+    <div class="cap">«Подробности» развёрнуто</div>
+    <div class="win">
+      <div class="titlebar"><div class="lights"><i class="c"></i><i class="m"></i><i class="x"></i></div><div class="title">MaktoNoDpi</div></div>
+      <div class="body">
+        <div class="hero">
+          <div class="glyph"><svg fill="#30a14e"><use href="#shield"/></svg></div>
+          <div><div class="ht">Соединение активно</div><div class="hs">Стратегия split2+disorder · 14 мин</div></div>
+        </div>
+        <div class="seclabel"><span>Сервисы</span>
+          <button class="refresh" title="Обновить"><svg fill="currentColor"><use href="#reload"/></svg></button></div>
+        <div class="list">
+          <div class="svc"><div class="ico yt"><svg><use href="#yt"/></svg></div>
+            <div class="meta"><div class="nm">YouTube</div></div>
+            <div class="lat">42 мс</div><div class="dot g"></div></div>
+          <div class="svc"><div class="ico dc"><svg><use href="#dc"/></svg></div>
+            <div class="meta"><div class="nm">Discord</div></div>
+            <div class="lat">38 мс</div><div class="dot g"></div></div>
+          <div class="svc"><div class="ico tg"><svg><use href="#tg"/></svg></div>
+            <div class="meta"><div class="nm">Telegram</div></div>
+            <div class="lat">55 мс</div><div class="dot g"></div></div>
+        </div>
+        <button class="btn secondary">Отключить</button>
+        <div class="details">
+          <div class="disc open"><svg><use href="#chev"/></svg>Подробности</div>
+          <dl class="techgrid">
+            <dt>Стратегия</dt><dd>split2+disorder</dd>
+            <dt>Время сессии</dt><dd>00:14:32</dd>
+            <dt>SOCKS-порт</dt><dd>127.0.0.1:1080</dd>
+            <dt>Интерфейс</dt><dd>Wi-Fi</dd>
+            <dt>DNS</dt><dd><span class="badge ok">очищен</span></dd>
+            <dt>QUIC-блок</dt><dd><span class="badge on">активен</span></dd>
+          </dl>
+          <div class="log">
+            <span class="t">09:14:02</span>  tpws запущен (universal)<br>
+            <span class="t">09:14:03</span>  SOCKS-прокси включён · Wi-Fi<br>
+            <span class="t">09:14:05</span>  <span class="ok">Подключено: split2+disorder</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

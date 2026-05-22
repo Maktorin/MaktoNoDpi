@@ -8,6 +8,27 @@ public struct Strategy: Equatable, Sendable {
 
 public enum LogType: String, Sendable { case info, success, warning, error }
 
+/// The monitored flagship services shown on the dashboard.
+public enum ServiceID: String, CaseIterable, Sendable {
+    case youtube, discord, telegram
+}
+
+/// Reachability of one monitored service through the proxy, with measured latency.
+public struct ServiceStatus: Equatable, Sendable {
+    public enum State: String, Sendable {
+        case unknown   // not connected / not yet tested
+        case ok        // reachable, healthy latency
+        case degraded  // reachable but slow
+        case down      // unreachable through the proxy
+    }
+    public let service: ServiceID
+    public let state: State
+    public let latencyMs: Int?
+    public init(service: ServiceID, state: State, latencyMs: Int? = nil) {
+        self.service = service; self.state = state; self.latencyMs = latencyMs
+    }
+}
+
 public struct LogEntry: Equatable, Sendable {
     public let type: LogType
     public let message: String
