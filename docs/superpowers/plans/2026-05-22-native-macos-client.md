@@ -24,7 +24,7 @@ maktonodpi/
 │  │  ├─ Models.swift                     # ProxyState, LogEntry, LogType, ProxyError, Strategy
 │  │  ├─ HostLists.swift                  # ported domain/ipset constants + file generation
 │  │  ├─ PatternFiles.swift               # fake QUIC initial + fake TLS ClientHello generators
-│  │  ├─ Strategies.swift                 # ~45 darwin strategy definitions (ported)
+│  │  ├─ Strategies.swift                 # 52 darwin strategy definitions (ported)
 │  │  ├─ ProcessRunner.swift              # protocol + real impl wrapping Foundation.Process
 │  │  ├─ CommandRunner.swift              # protocol + real impl for one-shot shell commands
 │  │  ├─ NetworkServices.swift            # parse `networksetup -listallnetworkservices`
@@ -452,7 +452,7 @@ git add Core/Sources/MaktoNoDpiCore/PatternFiles.swift Core/Tests/MaktoNoDpiCore
 git commit -m "feat(core): fake QUIC/TLS pattern file generators"
 ```
 
-### Task 1.4: Strategies (~45 darwin strategies, ported)
+### Task 1.4: Strategies (52 darwin strategies, ported)
 
 **Files:**
 - Create: `Core/Sources/MaktoNoDpiCore/Strategies.swift`
@@ -470,7 +470,7 @@ final class StrategiesTests: XCTestCase {
     let dir = "/tmp/lists"
 
     func testCountMatchesReference() {
-        XCTAssertEqual(Strategies.darwin(listsDir: dir).count, 45)
+        XCTAssertEqual(Strategies.darwin(listsDir: dir).count, 52)
     }
     func testFirstTierStrategyArgsExact() {
         let s = Strategies.darwin(listsDir: dir).first { $0.name == "multi:disorder+tlsrec" }!
@@ -528,13 +528,13 @@ public enum Strategies {
 - [ ] **Step 4: Run to verify it passes**
 
 Run: `cd Core && swift test --filter StrategiesTests`
-Expected: PASS — count is 45 and the pinned entries match.
+Expected: PASS — count is 52 and the pinned entries match.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add Core/Sources/MaktoNoDpiCore/Strategies.swift Core/Tests/MaktoNoDpiCoreTests/StrategiesTests.swift
-git commit -m "feat(core): port 45 darwin tpws strategies with parity tests"
+git commit -m "feat(core): port 52 darwin tpws strategies with parity tests"
 ```
 
 ### Task 1.5: Hosts data (Discord voice / Telegram fallback)
