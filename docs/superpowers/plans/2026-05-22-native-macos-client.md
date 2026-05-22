@@ -1376,7 +1376,7 @@ git commit -m "feat(core): proxy engine strategy-iteration loop"
 ### Task 5.1: Create the Xcode app target and embed Core
 
 **Files:**
-- Create: `App/MaktoNoDpi.xcodeproj` (via Xcode: macOS App, SwiftUI, name `MaktoNoDpi`, bundle id `com.makto.nodpi.native`)
+- Create: `App/MaktoNoDpi.xcodeproj` (via Xcode: macOS App, SwiftUI, name `MaktoNoDpi`, bundle id `com.makto.nodpi`)
 - Modify: project settings — add local SPM dependency on `../Core` (`MaktoNoDpiCore`); set Deployment Target macOS 13; disable App Sandbox (this is a non-sandboxed direct-distribution app); add `App/MaktoNoDpi/Resources/bin/tpws` to "Copy Bundle Resources".
 
 - [ ] **Step 1:** In Xcode create the macOS App target as above; add `Core` as a local package dependency and link `MaktoNoDpiCore`.
