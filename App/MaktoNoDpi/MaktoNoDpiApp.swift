@@ -6,6 +6,7 @@ import MaktoNoDpiCore
 struct MaktoNoDpiApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var controller = ProxyController()
+    @StateObject private var updater = UpdaterController()
 
     var body: some Scene {
         WindowGroup {
@@ -13,6 +14,13 @@ struct MaktoNoDpiApp: App {
                 .onAppear { appDelegate.attach(controller: controller) }
         }
         .windowResizability(.contentSize)
+        .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Проверить обновления") {
+                    updater.checkForUpdates()
+                }
+            }
+        }
 
         Settings {
             SettingsView()

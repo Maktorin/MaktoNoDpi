@@ -8,6 +8,9 @@ options:
 packages:
   MaktoNoDpiCore:
     path: ../Core
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
 
 targets:
   MaktoNoDpi:
@@ -23,6 +26,8 @@ targets:
     dependencies:
       - package: MaktoNoDpiCore
         product: MaktoNoDpiCore
+      - package: Sparkle
+        product: Sparkle
     info:
       path: MaktoNoDpi/Info.plist
       properties:
@@ -30,6 +35,9 @@ targets:
         LSMinimumSystemVersion: "13.0"
         NSHumanReadableCopyright: "MIT"
         LSUIElement: false
+        SUFeedURL: "https://github.com/Maktorin/MaktoNoDpi/releases/latest/download/appcast.xml"
+        SUEnableInstallerLauncherService: true
+        SUPublicEDKey: ""
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.makto.nodpi.native
