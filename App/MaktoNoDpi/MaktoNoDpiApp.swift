@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import MaktoNoDpiCore
 
 @main
 struct MaktoNoDpiApp: App {
@@ -12,6 +13,10 @@ struct MaktoNoDpiApp: App {
                 .onAppear { appDelegate.attach(controller: controller) }
         }
         .windowResizability(.contentSize)
+
+        Settings {
+            SettingsView()
+        }
     }
 }
 
@@ -26,5 +31,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard self.controller == nil else { return }
         self.controller = controller
         self.tray = TrayController(controller: controller)
+
+        let settings = SettingsStore()
+
+        // Apply the saved launch-at-login setting (electron-main.js:3061-3062).
+        LoginItem.setEnabled(settings.autoStart)
+
+        // Auto-connect ~1.5s after launch when enabled (electron-main.js:3066-3070).
+        if settings.autoConnect {
+            Task {
+                try? await Task.sleep(for: .milliseconds(1500))
+                await controller.connect()
+            }
+        }
     }
 }
