@@ -2,9 +2,11 @@ import SwiftUI
 
 @main
 struct MaktoNoDpiApp: App {
+    @StateObject private var controller = ProxyController()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(controller: controller)
         }
         .windowResizability(.contentSize)
     }
