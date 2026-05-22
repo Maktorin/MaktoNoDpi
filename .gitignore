@@ -6,3 +6,4 @@ DerivedData/
 *.xcodeproj/xcuserdata/
 App/MaktoNoDpi.xcodeproj/
 App/MaktoNoDpi/Info.plist
+dist/
