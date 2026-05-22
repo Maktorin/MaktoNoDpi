@@ -2,4 +2,8 @@
 build/
 DerivedData/
 *.xcuserstate
-bin/
+.build/
+*.xcodeproj/xcuserdata/
+App/MaktoNoDpi.xcodeproj/
+App/MaktoNoDpi/Info.plist
+dist/
