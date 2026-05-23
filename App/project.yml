@@ -34,7 +34,7 @@ targets:
         CFBundleDisplayName: MaktoNoDpi
         LSMinimumSystemVersion: "13.0"
         NSHumanReadableCopyright: "MIT"
-        LSUIElement: false
+        LSUIElement: true
         SUFeedURL: "https://github.com/Maktorin/maktonodpi/releases/latest/download/appcast.xml"
         SUEnableInstallerLauncherService: true
         SUPublicEDKey: ""

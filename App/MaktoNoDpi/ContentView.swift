@@ -1,8 +1,10 @@
 import SwiftUI
+import AppKit
 import MaktoNoDpiCore
 
 struct ContentView: View {
     @ObservedObject var controller: ProxyController
+    @ObservedObject var updater: UpdaterController
     @State private var showDetails = false
     @State private var now = Date()
 
@@ -14,10 +16,46 @@ struct ContentView: View {
             servicesSection
             primaryButton
             detailsSection
+            footer
         }
         .padding(16)
         .frame(width: 420)
         .onReceive(ticker) { now = $0 }
+    }
+
+    // MARK: - Footer (Settings / Updates / Quit)
+
+    private var footer: some View {
+        HStack(spacing: 16) {
+            footerButton("Настройки", "gearshape") { Self.openSettings() }
+            footerButton("Обновления", "arrow.down.circle") { updater.checkForUpdates() }
+            Spacer()
+            footerButton("Выход", "power") { NSApplication.shared.terminate(nil) }
+        }
+        .font(.system(size: 11))
+        .foregroundStyle(.secondary)
+    }
+
+    private func footerButton(_ title: String, _ symbol: String, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: symbol).labelStyle(.titleAndIcon)
+        }
+        .buttonStyle(.plain)
+        .help(title)
+    }
+
+    /// Open the SwiftUI `Settings` scene from a menu-bar-only app (no app menu).
+    /// macOS 13 renamed the selector to `showSettingsWindow:`; fall back to the
+    /// pre-13 `showPreferencesWindow:` for safety.
+    private static func openSettings() {
+        NSApp.activate(ignoringOtherApps: true)
+        let settingsSel = NSSelectorFromString("showSettingsWindow:")
+        let prefsSel = NSSelectorFromString("showPreferencesWindow:")
+        if NSApp.responds(to: settingsSel) {
+            NSApp.sendAction(settingsSel, to: nil, from: nil)
+        } else {
+            NSApp.sendAction(prefsSel, to: nil, from: nil)
+        }
     }
 
     // MARK: - Hero status
@@ -172,7 +210,7 @@ struct ContentView: View {
             techRow("Время сессии", sessionTime)
             techRow("SOCKS-порт", "127.0.0.1:1080")
             techRow("Интерфейс", isConnected ? controller.activeInterface : "—")
-            techBadgeRow("DNS", "очищен", tint: isConnected ? .green : nil)
+            techBadgeRow("DNS", "защищён", tint: isConnected ? .green : nil)
             techBadgeRow("QUIC-блок", "активен", tint: isConnected ? .blue : nil)
         }
         .font(.system(size: 12))

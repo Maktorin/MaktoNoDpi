@@ -9,29 +9,35 @@ struct MaktoNoDpiApp: App {
     @StateObject private var updater = UpdaterController()
 
     var body: some Scene {
-        WindowGroup {
-            ContentView(controller: controller)
+        MenuBarExtra {
+            ContentView(controller: controller, updater: updater)
+        } label: {
+            Image(systemName: menuBarSymbol)
                 .onAppear { appDelegate.attach(controller: controller) }
         }
-        .windowResizability(.contentSize)
-        .commands {
-            CommandGroup(after: .appInfo) {
-                Button("Проверить обновления") {
-                    updater.checkForUpdates()
-                }
-            }
-        }
+        .menuBarExtraStyle(.window)
 
         Settings {
             SettingsView()
         }
     }
+
+    /// Menu-bar glyph reflecting the current connection phase (template-rendered).
+    private var menuBarSymbol: String {
+        switch controller.phase {
+        case .connected:    return "shield.lefthalf.filled"
+        case .searching:    return "shield.righthalf.filled"
+        case .error:        return "exclamationmark.shield"
+        case .disconnected: return "shield.slash"
+        }
+    }
 }
 
-/// Owns the menu-bar status item and the app lifecycle hooks.
+/// Owns the app lifecycle hooks. The menu-bar presence is now the SwiftUI
+/// `MenuBarExtra` scene; this delegate only handles launch/quit/signal cleanup
+/// and the one-time controller wiring (login item + auto-connect).
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var tray: TrayController?
     private var controller: ProxyController?
     private var signalSources: [DispatchSourceSignal] = []
 
@@ -39,7 +45,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func attach(controller: ProxyController) {
         guard self.controller == nil else { return }
         self.controller = controller
-        self.tray = TrayController(controller: controller)
 
         let settings = SettingsStore()
 
