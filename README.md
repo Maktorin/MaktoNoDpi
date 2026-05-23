@@ -1,9 +1,9 @@
 # MaktoNoDpi
 
-A native macOS app (Swift/SwiftUI) that bypasses DPI-based internet filtering. It mirrors the feature
-set of the Electron-based MaktoNoDpi client: automatic strategy iteration, menu-bar status item,
-SOCKS5 proxy via a bundled `tpws` binary, DNS override, QUIC block via `pfctl`, login item, and
-in-app update checks powered by Sparkle.
+A native macOS app (Swift/SwiftUI) that bypasses DPI-based internet filtering. It provides automatic
+strategy iteration, a menu-bar status item, a SOCKS5 proxy via a bundled `tpws` binary, DNS override,
+QUIC block via `pfctl`, login item, and in-app update checks powered by Sparkle. The app lives entirely
+in the menu bar (no Dock icon).
 
 ## Architecture
 
@@ -17,13 +17,12 @@ Core/                   Swift Package (SPM) - pure logic, CLI-testable with swif
 
 App/                    Xcode SwiftUI app - thin shell over Core
   MaktoNoDpi/
-    MaktoNoDpiApp.swift   @main, AppDelegate, EmergencyCleanup
-    ProxyController.swift       @MainActor ObservableObject bridging Core to UI
-    ContentView.swift           main window
-    SettingsView.swift          autostart / autoconnect / strategy / custom domains
-    TrayController.swift        NSStatusItem menu
-    UpdaterController.swift     Sparkle wrapper
-    LoginItem.swift             SMAppService.mainApp wrapper
+    MaktoNoDpiApp.swift   @main, MenuBarExtra scene, AppDelegate, EmergencyCleanup
+    ProxyController.swift @MainActor ObservableObject bridging Core to UI
+    ContentView.swift     menu-bar popover dashboard (services, status, details, footer)
+    SettingsView.swift    autostart / autoconnect / strategy / custom domains
+    UpdaterController.swift Sparkle wrapper
+    LoginItem.swift       SMAppService.mainApp wrapper
 
 scripts/
   package.sh            build Release .app and produce dist/MaktoNoDpi.dmg
@@ -72,9 +71,9 @@ The script regenerates the project, builds a Release .app (unsigned), then stage
    xattr -cr /Applications/MaktoNoDpi.app
    ```
    macOS Gatekeeper blocks unsigned apps downloaded from the internet. The `xattr -cr` command
-   strips the `com.apple.quarantine` extended attribute so the app can launch. This is the same
-   approach used by the Electron version of MaktoNoDpi.
-4. Open `MaktoNoDpi.app` from `/Applications`.
+   strips the `com.apple.quarantine` extended attribute so the app can launch. This is the standard
+   approach for distributing unsigned macOS apps.
+4. Open `MaktoNoDpi.app` - it appears in the menu bar.
 
 ## Notes
 
