@@ -83,23 +83,16 @@ final class ProxyController: ObservableObject {
             await ProxyController.probeTCP(host: "127.0.0.1", port: port, timeout: 2.0)
         }
 
-        // elevate: write the pf-conf + hosts-add temp files, build the batched
-        // privileged script and run it (single admin prompt).
+        // elevate: ensure the root-owned helper is installed (one admin prompt on
+        // first use / after an update), then run the privileged connect step via
+        // passwordless sudo — no prompt on subsequent launches.
         let elevate: @Sendable (String) async throws -> Void = { _ in
-            let tmp = FileManager.default.temporaryDirectory
-            let pfConfPath = tmp.appendingPathComponent("maktonodpi-pf.conf").path
-            let hostsAddPath = tmp.appendingPathComponent("maktonodpi-hosts-add.txt").path
-
-            try pfRules.write(toFile: pfConfPath, atomically: true, encoding: .utf8)
-            let hostsBlock = hostsMarker + "\n" + hostsFallback + "\n"
-            try hostsBlock.write(toFile: hostsAddPath, atomically: true, encoding: .utf8)
-
-            let script = PrivilegedRunner.buildConnectScript(
-                pfConfPath: pfConfPath,
-                hostsAddFile: hostsAddPath,
-                hostsMarker: hostsMarker
+            try await PrivilegedHelperInstaller.ensureInstalled(
+                pfRules: pfRules, hostsMarker: hostsMarker, hostsBlock: hostsFallback
             )
-            _ = try await PrivilegedRunner(runner: SystemCommandRunner()).run(shellScript: script)
+            if !(await PrivilegedHelperInstaller.run("connect")) {
+                throw PrivilegedHelperInstaller.HelperError.verifyFailed
+            }
         }
 
         self.engine = ProxyEngine(
@@ -225,10 +218,10 @@ final class ProxyController: ObservableObject {
         return base.appendingPathComponent("MaktoNoDpi", isDirectory: true)
     }
 
-    /// Reload /etc/pf.conf to drop the QUIC block. Best-effort; one admin prompt.
+    /// Drop the QUIC block on disconnect via the passwordless helper (no prompt).
+    /// Best-effort: a no-op if the helper was never installed.
     private static func teardownPf() async {
-        let script = "/sbin/pfctl -f /etc/pf.conf 2>/dev/null; exit 0"
-        _ = try? await PrivilegedRunner(runner: SystemCommandRunner()).run(shellScript: script)
+        await PrivilegedHelperInstaller.run("disconnect")
     }
 
     /// Open a TCP connection to verify a port is listening, with a timeout.
