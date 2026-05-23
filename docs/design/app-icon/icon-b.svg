@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bgB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14B8A6"/>
+      <stop offset="1" stop-color="#10B981"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="229" fill="url(#bgB)"/>
+  <rect x="0" y="0" width="1024" height="1024" rx="229" fill="#FFFFFF" opacity="0.06"/>
+  <!-- DPI wall: dashed vertical bars, with a gap in the middle -->
+  <g stroke="#FFFFFF" stroke-width="40" stroke-linecap="round" opacity="0.45">
+    <line x1="512" y1="250" x2="512" y2="360"/>
+    <line x1="512" y1="404" x2="512" y2="452"/>
+    <line x1="512" y1="572" x2="512" y2="620"/>
+    <line x1="512" y1="664" x2="512" y2="774"/>
+  </g>
+  <!-- arrow piercing through the gap -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="56" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="296" y1="512" x2="690" y2="512"/>
+    <polyline points="586,408 706,512 586,616"/>
+  </g>
+</svg>
