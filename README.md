@@ -6,10 +6,14 @@
 автозапуск и авто-обновления на базе Sparkle. Приложение живёт целиком в
 меню-баре (без иконки в доке).
 
+Движок обхода DPI - [zapret](https://github.com/bol-van/zapret) (bol-van).
+Приложение использует его утилиту `tpws`, собранную из исходников и встроенную
+в бандл; стратегии обхода и host-листы портированы из darwin-ветки zapret.
+
 ## Архитектура
 
 ```
-Core/                   Swift-пакет (SPM) — чистая логика, тестируется через swift test
+Core/                   Swift-пакет (SPM) - чистая логика, тестируется через swift test
   Sources/MaktoNoDpiCore/
     ProxyEngine.swift       цикл перебора стратегий
     SystemConfig.swift      вкл/выкл прокси, DNS через networksetup
@@ -17,7 +21,7 @@ Core/                   Swift-пакет (SPM) — чистая логика, т
     PrivilegedHelper.swift  генерация root-helper'а + sudoers (авторизация один раз)
     ...
 
-App/                    Xcode SwiftUI-приложение — тонкая оболочка над Core
+App/                    Xcode SwiftUI-приложение - тонкая оболочка над Core
   MaktoNoDpi/
     MaktoNoDpiApp.swift          @main, сцена MenuBarExtra, AppDelegate, EmergencyCleanup
     ProxyController.swift        @MainActor-мост Core → UI
@@ -65,29 +69,29 @@ bash scripts/release.sh 1.0
 # (ручная установка), appcast.xml (EdDSA-подписанный фид)
 ```
 
-Полный процесс нарезки релиза, подписи и публикации на GitHub Releases — в
+Полный процесс нарезки релиза, подписи и публикации на GitHub Releases - в
 [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Установка
 
 1. Открыть `MaktoNoDpi.dmg`, перетащить `MaktoNoDpi.app` в `/Applications`.
 2. Приложение **не подписано** Apple (нет Developer ID), поэтому Gatekeeper
-   блокирует первый запуск. Обойти — правый клик по приложению → **«Открыть»**
+   блокирует первый запуск. Обойти - правый клик по приложению → **«Открыть»**
    (один раз), либо снять карантин:
    ```bash
    xattr -cr /Applications/MaktoNoDpi.app
    ```
-3. Запустить — приложение появится в меню-баре.
+3. Запустить - приложение появится в меню-баре.
 
 ## Заметки
 
 - **Авторизация root один раз.** Привилегированные операции (блок QUIC через
   pfctl, правка `/etc/hosts`) идут через root-owned helper с scoped NOPASSWD
-  sudoers-правилом: при первом подключении — один промпт пароля на установку
-  helper'а, дальше всё через `sudo -n` без пароля. Подробности — в
+  sudoers-правилом: при первом подключении - один промпт пароля на установку
+  helper'а, дальше всё через `sudo -n` без пароля. Подробности - в
   `Core/Sources/MaktoNoDpiCore/PrivilegedHelper.swift`.
 - **Авто-обновления** работают на EdDSA-подписях Sparkle (без Apple Developer
-  ID). Цена отсутствия подписи Apple — Gatekeeper требует ручное «Открыть» на
+  ID). Цена отсутствия подписи Apple - Gatekeeper требует ручное «Открыть» на
   каждой новой версии.
-- Встроенный `tpws` — universal-сборка (arm64 + x86_64) из исходников
+- Встроенный `tpws` - universal-сборка (arm64 + x86_64) из исходников
   [zapret](https://github.com/bol-van/zapret). Пересобрать: `bash scripts/build-tpws.sh`.
