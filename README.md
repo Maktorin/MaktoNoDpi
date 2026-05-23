@@ -1,46 +1,51 @@
 # MaktoNoDpi
 
-A native macOS app (Swift/SwiftUI) that bypasses DPI-based internet filtering. It provides automatic
-strategy iteration, a menu-bar status item, a SOCKS5 proxy via a bundled `tpws` binary, DNS override,
-QUIC block via `pfctl`, login item, and in-app update checks powered by Sparkle. The app lives entirely
-in the menu bar (no Dock icon).
+Нативное приложение для macOS (Swift/SwiftUI), обходящее DPI-блокировки
+интернета. Автоподбор стратегии обхода, статус-иконка в меню-баре, SOCKS5-прокси
+через встроенный бинарник `tpws`, подмена DNS, блок QUIC через `pfctl`,
+автозапуск и авто-обновления на базе Sparkle. Приложение живёт целиком в
+меню-баре (без иконки в доке).
 
-## Architecture
+## Архитектура
 
 ```
-Core/                   Swift Package (SPM) - pure logic, CLI-testable with swift test
+Core/                   Swift-пакет (SPM) — чистая логика, тестируется через swift test
   Sources/MaktoNoDpiCore/
-    ProxyEngine.swift   strategy iteration loop
-    SystemConfig.swift  proxy on/off, DNS via networksetup
-    BinaryManager.swift locate / chmod bundled tpws
+    ProxyEngine.swift       цикл перебора стратегий
+    SystemConfig.swift      вкл/выкл прокси, DNS через networksetup
+    BinaryManager.swift     распаковка / chmod встроенного tpws
+    PrivilegedHelper.swift  генерация root-helper'а + sudoers (авторизация один раз)
     ...
 
-App/                    Xcode SwiftUI app - thin shell over Core
+App/                    Xcode SwiftUI-приложение — тонкая оболочка над Core
   MaktoNoDpi/
-    MaktoNoDpiApp.swift   @main, MenuBarExtra scene, AppDelegate, EmergencyCleanup
-    ProxyController.swift @MainActor ObservableObject bridging Core to UI
-    ContentView.swift     menu-bar popover dashboard (services, status, details, footer)
-    SettingsView.swift    autostart / autoconnect / strategy / custom domains
-    UpdaterController.swift Sparkle wrapper
-    LoginItem.swift       SMAppService.mainApp wrapper
+    MaktoNoDpiApp.swift          @main, сцена MenuBarExtra, AppDelegate, EmergencyCleanup
+    ProxyController.swift        @MainActor-мост Core → UI
+    ContentView.swift            поповер меню-бара (сервисы, статус, подробности, футер)
+    SettingsView.swift           автозапуск / автоподключение / стратегия / свои домены
+    PrivilegedHelperInstaller.swift установка root-helper'а, вызовы sudo -n
+    UpdaterController.swift      обёртка над Sparkle
+    LoginItem.swift              обёртка над SMAppService.mainApp
 
 scripts/
-  package.sh            build Release .app and produce dist/MaktoNoDpi.dmg
+  build-tpws.sh        собрать universal tpws (arm64+x86_64) из исходников zapret
+  package.sh           собрать Release .app → dist/MaktoNoDpi.dmg
+  release.sh           собрать + подписать релиз для Sparkle (zip + dmg + appcast.xml)
 ```
 
-## Requirements
+## Требования
 
-- macOS 13.0 or later
-- Xcode 15+ with Swift 6 toolchain
+- macOS 13.0 или новее
+- Xcode 15+ с тулчейном Swift 6
 - [xcodegen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
 
-## Build
+## Сборка
 
 ```bash
-# Regenerate the Xcode project (required after editing project.yml or adding sources)
+# Перегенерировать Xcode-проект (после правок project.yml или добавления файлов)
 cd App && xcodegen generate
 
-# Build (Debug)
+# Сборка (Debug)
 xcodebuild \
   -project App/MaktoNoDpi.xcodeproj \
   -scheme MaktoNoDpi \
@@ -48,38 +53,41 @@ xcodebuild \
   -destination 'platform=macOS' \
   build
 
-# Run Core unit tests (no Xcode needed)
+# Юнит-тесты Core (Xcode не нужен)
 cd Core && swift test
 ```
 
-## Package (.app + .dmg)
+## Релиз и упаковка
 
 ```bash
-bash scripts/package.sh
-# Produces: dist/MaktoNoDpi.dmg
+bash scripts/release.sh 1.0
+# На выходе в dist/: MaktoNoDpi-1.0.zip (апдейт Sparkle), MaktoNoDpi.dmg
+# (ручная установка), appcast.xml (EdDSA-подписанный фид)
 ```
 
-The script regenerates the project, builds a Release .app (unsigned), then stages it with an
-`/Applications` symlink and compresses it into a UDZO DMG.
+Полный процесс нарезки релиза, подписи и публикации на GitHub Releases — в
+[docs/RELEASING.md](docs/RELEASING.md).
 
-## Install
+## Установка
 
-1. Open `dist/MaktoNoDpi.dmg`.
-2. Drag `MaktoNoDpi.app` to `/Applications`.
-3. **Remove the quarantine flag** (required because the app is unsigned):
+1. Открыть `MaktoNoDpi.dmg`, перетащить `MaktoNoDpi.app` в `/Applications`.
+2. Приложение **не подписано** Apple (нет Developer ID), поэтому Gatekeeper
+   блокирует первый запуск. Обойти — правый клик по приложению → **«Открыть»**
+   (один раз), либо снять карантин:
    ```bash
    xattr -cr /Applications/MaktoNoDpi.app
    ```
-   macOS Gatekeeper blocks unsigned apps downloaded from the internet. The `xattr -cr` command
-   strips the `com.apple.quarantine` extended attribute so the app can launch. This is the standard
-   approach for distributing unsigned macOS apps.
-4. Open `MaktoNoDpi.app` - it appears in the menu bar.
+3. Запустить — приложение появится в меню-баре.
 
-## Notes
+## Заметки
 
-- The app is **unsigned** (no Developer ID). Full Sparkle auto-updates require a signed build;
-  see `docs/reference/updates.md` for the release signing path.
-- Privileged operations (pfctl QUIC block, /etc/hosts edits) are batched into a single
-  `osascript ... with administrator privileges` prompt per connection attempt.
-- The bundled `tpws` binary is a universal (arm64 + x86_64) macOS build. To rebuild it from
-  source, run `bash scripts/build-tpws.sh`.
+- **Авторизация root один раз.** Привилегированные операции (блок QUIC через
+  pfctl, правка `/etc/hosts`) идут через root-owned helper с scoped NOPASSWD
+  sudoers-правилом: при первом подключении — один промпт пароля на установку
+  helper'а, дальше всё через `sudo -n` без пароля. Подробности — в
+  `Core/Sources/MaktoNoDpiCore/PrivilegedHelper.swift`.
+- **Авто-обновления** работают на EdDSA-подписях Sparkle (без Apple Developer
+  ID). Цена отсутствия подписи Apple — Gatekeeper требует ручное «Открыть» на
+  каждой новой версии.
+- Встроенный `tpws` — universal-сборка (arm64 + x86_64) из исходников
+  [zapret](https://github.com/bol-van/zapret). Пересобрать: `bash scripts/build-tpws.sh`.
