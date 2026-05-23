@@ -15,6 +15,8 @@ final class ProxyController: ObservableObject {
     @Published var log: [LogEntry] = []
     /// Per-service reachability shown on the dashboard (unknown until connected).
     @Published var services: [ServiceStatus] = ServiceID.allCases.map { ServiceStatus(service: $0, state: .unknown) }
+    /// Primary network service the proxy is bound to (e.g. "Wi-Fi"); "—" when disconnected.
+    @Published var activeInterface: String = "—"
 
     private let engine: ProxyEngine
     private let settings: SettingsStore
@@ -144,6 +146,12 @@ final class ProxyController: ObservableObject {
         services = await tester.testServices(port: 1080)
     }
 
+    /// Refresh the displayed network interface name (primary active service).
+    private func refreshInterface() async {
+        let names = (try? await NetworkServices.active(using: SystemCommandRunner())) ?? []
+        activeInterface = names.first ?? "—"
+    }
+
     var isConnected: Bool {
         if case .connected = phase { return true }
         return false
@@ -190,10 +198,14 @@ final class ProxyController: ObservableObject {
             phase = p
             switch p {
             case .connected:
-                if !wasConnected { startAutoRefresh() }
+                if !wasConnected {
+                    startAutoRefresh()
+                    Task { await refreshInterface() }
+                }
             case .disconnected, .error:
                 stopAutoRefresh()
                 services = ServiceID.allCases.map { ServiceStatus(service: $0, state: .unknown) }
+                activeInterface = "—"
             case .searching:
                 break
             }

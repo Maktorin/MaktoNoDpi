@@ -171,6 +171,9 @@ struct ContentView: View {
             techRow("Стратегия", strategyName)
             techRow("Время сессии", sessionTime)
             techRow("SOCKS-порт", "127.0.0.1:1080")
+            techRow("Интерфейс", isConnected ? controller.activeInterface : "—")
+            techBadgeRow("DNS", "очищен", tint: isConnected ? .green : nil)
+            techBadgeRow("QUIC-блок", "активен", tint: isConnected ? .blue : nil)
         }
         .font(.system(size: 12))
         .padding(.horizontal, 4)
@@ -181,6 +184,26 @@ struct ContentView: View {
             Text(label).foregroundStyle(.secondary)
             Text(value).gridColumnAlignment(.trailing).frame(maxWidth: .infinity, alignment: .trailing)
                 .monospacedDigit()
+        }
+    }
+
+    /// A tech-grid row whose value is a tinted badge; a plain dash when `tint` is nil (disconnected).
+    private func techBadgeRow(_ label: String, _ value: String, tint: Color?) -> some View {
+        GridRow {
+            Text(label).foregroundStyle(.secondary)
+            Group {
+                if let tint {
+                    Text(value)
+                        .font(.system(size: 11, weight: .medium))
+                        .padding(.horizontal, 7).padding(.vertical, 2)
+                        .background(tint.opacity(0.16), in: Capsule())
+                        .foregroundStyle(tint)
+                } else {
+                    Text("—").monospacedDigit()
+                }
+            }
+            .gridColumnAlignment(.trailing)
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
 
