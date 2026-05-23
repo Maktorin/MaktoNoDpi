@@ -35,9 +35,9 @@ targets:
         LSMinimumSystemVersion: "13.0"
         NSHumanReadableCopyright: "MIT"
         LSUIElement: true
-        SUFeedURL: "https://github.com/Maktorin/maktonodpi/releases/latest/download/appcast.xml"
+        SUFeedURL: "https://github.com/Maktorin/MaktoNoDpi/releases/latest/download/appcast.xml"
         SUEnableInstallerLauncherService: true
-        SUPublicEDKey: ""
+        SUPublicEDKey: "bLWRnUy9fWJAb0CIQN3wr2de1l5PV8AXVnvHdgktk9w="
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.makto.nodpi
