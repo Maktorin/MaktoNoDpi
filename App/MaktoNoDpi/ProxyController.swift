@@ -13,11 +13,19 @@ import MaktoNoDpiCore
 final class ProxyController: ObservableObject {
     @Published var phase: ProxyPhase = .disconnected
     @Published var log: [LogEntry] = []
+    /// Per-service reachability shown on the dashboard (unknown until connected).
+    @Published var services: [ServiceStatus] = ServiceID.allCases.map { ServiceStatus(service: $0, state: .unknown) }
 
     private let engine: ProxyEngine
     private let settings: SettingsStore
+    /// Tester reused for on-demand and periodic dashboard refreshes.
+    private let tester: ConnectivityTester
     /// Active services snapshot captured at the last connect, used for teardown.
     private var eventTask: Task<Void, Never>?
+    /// Periodic dashboard refresh, alive only while connected.
+    private var refreshTask: Task<Void, Never>?
+    /// Seconds between automatic dashboard refreshes.
+    private static let refreshInterval: Duration = .seconds(30)
 
     /// Resolved bundled tpws path (read-only, may be translocated) for fallbacks.
     private let bundledTpwsPath: String
@@ -48,6 +56,8 @@ final class ProxyController: ObservableObject {
         let pfRules = PrivilegedRunner.pfQuicBlockRules
 
         let commandRunner = SystemCommandRunner()
+        let tester = ConnectivityTester(runner: commandRunner)
+        self.tester = tester
 
         // prepareFiles: install binary, write lists + pattern files, return listsDir.
         let prepareFiles: @Sendable () async throws -> String = {
@@ -94,7 +104,7 @@ final class ProxyController: ObservableObject {
             strategies: Strategies.darwin(listsDir: "\(supportPath)/lists"),
             processRunner: SystemProcessRunner(),
             commandRunner: commandRunner,
-            tester: ConnectivityTester(runner: commandRunner),
+            tester: tester,
             settings: settings,
             activeServices: activeServices,
             portProbe: portProbe,
@@ -125,6 +135,39 @@ final class ProxyController: ObservableObject {
         await ProxyController.teardownPf()
     }
 
+    /// Re-probe all services now (the dashboard ↻ button). No-op when disconnected.
+    func refreshServices() async {
+        guard isConnected else {
+            services = ServiceID.allCases.map { ServiceStatus(service: $0, state: .unknown) }
+            return
+        }
+        services = await tester.testServices(port: 1080)
+    }
+
+    var isConnected: Bool {
+        if case .connected = phase { return true }
+        return false
+    }
+
+    // MARK: - Auto-refresh lifecycle
+
+    private func startAutoRefresh() {
+        refreshTask?.cancel()
+        refreshTask = Task { [weak self] in
+            await self?.refreshServices()                 // immediate first probe
+            while !Task.isCancelled {
+                try? await Task.sleep(for: ProxyController.refreshInterval)
+                if Task.isCancelled { break }
+                await self?.refreshServices()
+            }
+        }
+    }
+
+    private func stopAutoRefresh() {
+        refreshTask?.cancel()
+        refreshTask = nil
+    }
+
     // MARK: - Event consumption
 
     private func startConsumingEvents() {
@@ -143,7 +186,17 @@ final class ProxyController: ObservableObject {
             log.append(entry)
             if log.count > 100 { log.removeFirst(log.count - 100) }
         case .phase(let p):
+            let wasConnected = isConnected
             phase = p
+            switch p {
+            case .connected:
+                if !wasConnected { startAutoRefresh() }
+            case .disconnected, .error:
+                stopAutoRefresh()
+                services = ServiceID.allCases.map { ServiceStatus(service: $0, state: .unknown) }
+            case .searching:
+                break
+            }
         }
     }
 
