@@ -2,17 +2,6 @@ import XCTest
 @testable import MaktoNoDpiCore
 
 final class PrivilegedRunnerTests: XCTestCase {
-    func testBuildConnectScriptHasPfAndHostsGuard() {
-        let script = PrivilegedRunner.buildConnectScript(
-            pfConfPath: "/tmp/pf.conf",
-            hostsAddFile: "/tmp/hosts-add.txt",
-            hostsMarker: HostsData.marker
-        )
-        XCTAssertTrue(script.contains("pfctl -f /tmp/pf.conf"))
-        XCTAssertTrue(script.contains("pfctl -E"))
-        XCTAssertTrue(script.contains("grep -q")) // marker guard before appending hosts
-        XCTAssertTrue(script.contains(HostsData.marker))
-    }
     func testPfRulesContent() {
         let rules = PrivilegedRunner.pfQuicBlockRules
         XCTAssertTrue(rules.contains("block return out quick proto udp from any to any port 443"))

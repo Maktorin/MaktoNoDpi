@@ -102,9 +102,10 @@ enum EmergencyCleanup {
             // Restore DNS to automatic (best-effort).
             shell("/usr/sbin/networksetup", ["-setdnsservers", svc, "Empty"])
         }
-        // Reload pf to drop the QUIC block. May fail silently if not root —
-        // acceptable for the crash path.
-        shell("/sbin/pfctl", ["-f", "/etc/pf.conf"])
+        // Drop the QUIC block via the passwordless helper. Unlike a bare `pfctl`
+        // (which needs root and silently failed here), this now actually succeeds
+        // on the quit/crash path once the helper is installed; a no-op otherwise.
+        shell("/usr/bin/sudo", ["-n", PrivilegedHelper.helperPath, "disconnect"])
         // Kill any lingering tpws child.
         shell("/usr/bin/pkill", ["-f", "tpws"])
     }
