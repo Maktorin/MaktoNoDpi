@@ -26,9 +26,23 @@ struct ContentView: View {
     // MARK: - Footer (Settings / Updates / Quit)
 
     private var footer: some View {
-        HStack(spacing: 16) {
-            footerButton("Настройки", "gearshape") { Self.openSettings() }
-            footerButton("Обновления", "arrow.down.circle") { updater.checkForUpdates() }
+        HStack(spacing: 14) {
+            // SettingsLink reliably opens the Settings scene from a menu-bar-only
+            // (LSUIElement) app on macOS 14+, where the legacy showSettingsWindow:
+            // selector no longer works. Fall back to the selector on macOS 13.
+            if #available(macOS 14, *) {
+                SettingsLink { footerLabel("Настройки", "gearshape") }
+                    .buttonStyle(.plain)
+                    .help("Настройки")
+                    .simultaneousGesture(TapGesture().onEnded { NSApp.activate(ignoringOtherApps: true) })
+            } else {
+                footerButton("Настройки", "gearshape") { Self.openSettingsLegacy() }
+            }
+            footerButton("Обновления", "arrow.down.circle") {
+                NSApp.activate(ignoringOtherApps: true)
+                updater.checkForUpdates()
+            }
+            footerButton("О программе", "info.circle") { Self.showAbout() }
             Spacer()
             footerButton("Выход", "power") { NSApplication.shared.terminate(nil) }
         }
@@ -37,25 +51,26 @@ struct ContentView: View {
     }
 
     private func footerButton(_ title: String, _ symbol: String, _ action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: symbol).labelStyle(.titleAndIcon)
-        }
-        .buttonStyle(.plain)
-        .help(title)
+        Button(action: action) { footerLabel(title, symbol) }
+            .buttonStyle(.plain)
+            .help(title)
     }
 
-    /// Open the SwiftUI `Settings` scene from a menu-bar-only app (no app menu).
-    /// macOS 13 renamed the selector to `showSettingsWindow:`; fall back to the
-    /// pre-13 `showPreferencesWindow:` for safety.
-    private static func openSettings() {
+    private func footerLabel(_ title: String, _ symbol: String) -> some View {
+        Label(title, systemImage: symbol).labelStyle(.titleAndIcon)
+    }
+
+    /// Show the standard macOS About panel (name/version/copyright from Info.plist).
+    /// Activate first so it comes to front in a menu-bar-only app.
+    private static func showAbout() {
         NSApp.activate(ignoringOtherApps: true)
-        let settingsSel = NSSelectorFromString("showSettingsWindow:")
-        let prefsSel = NSSelectorFromString("showPreferencesWindow:")
-        if NSApp.responds(to: settingsSel) {
-            NSApp.sendAction(settingsSel, to: nil, from: nil)
-        } else {
-            NSApp.sendAction(prefsSel, to: nil, from: nil)
-        }
+        NSApp.orderFrontStandardAboutPanel(options: [:])
+    }
+
+    /// macOS 13 fallback: open the Settings scene via the legacy selector.
+    private static func openSettingsLegacy() {
+        NSApp.activate(ignoringOtherApps: true)
+        NSApp.sendAction(NSSelectorFromString("showSettingsWindow:"), to: nil, from: nil)
     }
 
     // MARK: - Hero status
